@@ -1,0 +1,48 @@
+---
+title: "Statisztikai programcsomagok tudása"
+author: "Abari Kálmán"
+date: '2022. 01. 27.'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+A [Revolutions](http://blog.revolutionanalytics.com/2014/08/comparing-the-statistical-capabilities-of-software-packages.html) blogon megjelent táblázatban 5 statisztikai programcsomagot vetettek össze abból a szempontból, hogy 57 statisztikai eljáráscsoportból összesen hányat tudunk az adott programcsomaggal végrehajtani. Az [eredeti táblázat itt](http://stanfordphd.com/Statistical_Software.html) jelent meg, és a 2013 végi adatokat tükrözi. A táblázat alapján rajzoljunk oszlopdiagramot!
+
+```{r}
+# Beolvasás
+d <- read.table(file = "adat/stat_packages.csv", strip.white = T,
+                sep=";", header=T, quote="", comment.char="")
+str(d) # szerkezet
+# adatmanipuláció a rajzoláshoz
+stat <- sapply(d[-1], function(x) sum(x != ""))
+df <- data.frame(PACKAGE=names(stat), NUM=stat)
+df$PACKAGE <- factor(df$PACKAGE, 
+                     levels=c("R", "MATLAB", "SAS", "STATA", "SPSS"))
+```
+
+A teljes táblázat:
+
+```{r}
+knitr::kable(d)
+```
+
+Az oszlopdiagram megrajzolása:
+
+```{r barplot}
+library(ggplot2)
+library(ggthemes)
+library(RColorBrewer)
+p <- ggplot(data=df, mapping=aes(x=PACKAGE, y=NUM)) +
+  geom_col(col="black", fill=brewer.pal(n=5, name="Dark2")) + 
+  labs(title="A statisztikai programok tudása 2013-ban", 
+       x=NULL, y="Statisztikai eljárások száma") +
+  geom_text(aes(label=NUM), vjust=-0.6) +
+  coord_cartesian(ylim = c(0, 65)) +
+  theme_stata()
+    
+# ggsave(plot=p, file="stat_packages.png", width=5, height=4)
+p
+```
